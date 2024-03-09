@@ -1,0 +1,41 @@
+{
+  "Configuration": {
+    "Appenders": {
+      "Console": {
+        "name": "Console",
+        "target": "SYSTEM_OUT",
+        "PatternLayout": {
+          "pattern": "%style{%d{ISO8601}}{black} %highlight{%-5level }[%style{%t}{bright,blue}] %style{%C{1.}}{bright,yellow}: %msg%n%throwable"
+        }
+      },
+      "RollingFile": {
+        "name": "RollingFile",
+        "fileName": "./logs/spring-boot-logger-log4j2.log",
+        "filePattern": "./logs/${date:yyyy-MM}/spring-boot-logger-log4j2-%d{-dd-MMMM-yyyy}-%i.log.gz",
+        "PatternLayout": {
+          "pattern": "%d %p %C{1.} [%t] %m%n"
+        },
+        "Policies": {
+          "OnStartupTriggeringPolicy": {},
+          "SizeBasedTriggeringPolicy": {
+            "size": "10 MB"
+          },
+          "TimeBasedTriggeringPolicy": {}
+        }
+      }
+    },
+    "Loggers": {
+      "Root": {
+        "level": "warn",
+        "AppenderRef": [
+          { "ref": "Console" },
+          { "ref": "RollingFile" }
+        ]
+      },
+      "Logger": {
+        "name": "de.vlaasch",
+        "level": "debug"
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+2024-03-09 12:17:12,996 INFO o.s.b.StartupInfoLogger [main] Starting Co2Bil using Java 17 with PID 10568 (C:\Users\vivien.laasch\api-endpunkt\co2bil\bin\main started by Vivien.Laasch in C:\Users\vivien.laasch\api-endpunkt\co2bil)
+2024-03-09 12:17:13,025 DEBUG o.s.b.StartupInfoLogger [main] Running with Spring Boot v3.2.3, Spring v6.1.4
+2024-03-09 12:17:13,033 INFO o.s.b.SpringApplication [main] No active profile set, falling back to 1 default profile: "default"
+2024-03-09 12:17:29,759 WARN o.s.b.a.s.s.UserDetailsServiceAutoConfiguration [main] 
+
+Using generated security password: 35345118-3140-4fe8-9c3e-fc7f360708e8
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2024-03-09 12:17:30,613 INFO o.s.b.StartupInfoLogger [main] Started Co2Bil in 19.019 seconds (process running for 22.287)
