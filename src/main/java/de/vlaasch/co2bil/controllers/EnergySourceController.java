@@ -2,9 +2,7 @@ package de.vlaasch.co2bil.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.vlaasch.co2bil.data.ConsumptionCalculation;
-import de.vlaasch.co2bil.data.ConsumptionForm;
+import de.vlaasch.co2bil.data.EnergyConsumption;
 import de.vlaasch.co2bil.data.EnergySource;
-import de.vlaasch.co2bil.request.EnergySourceWrapper;
+import de.vlaasch.co2bil.request.EnergyConsumptionWrapper;
 import de.vlaasch.co2bil.services.energysource.EnergySourceApiService;
 
 @RestController
@@ -27,54 +25,46 @@ public class EnergySourceController {
     EnergySourceApiService energySourceApiService;
 
     @PostMapping(value = "/consumption")
-    public ResponseEntity<List<ConsumptionCalculation>> getConsumption(
-            @RequestBody EnergySourceWrapper sources) {
+    public ResponseEntity<?> getConsumption(@RequestBody EnergyConsumptionWrapper consumptions) {
 
         // Fetch external energy sources from the API, assume there is only "getAll"
         // method for now
         List<EnergySource> externalSources = energySourceApiService.getEnergySources();
 
-        List<ConsumptionCalculation> consumptionList = new ArrayList<>();
+        List<ConsumptionCalculation> calculations = new ArrayList<>();
 
-        for (ConsumptionForm source : sources.getEnergySources()) {
-            String id = source.getId();
-            String description = source.getDescription();
-            double consumption = source.getConsumption();
+        for (EnergyConsumption cons : consumptions.getConsumptions()) {
+            String id = cons.getId();
+            String description = cons.getDescription();
+            Double consumption = cons.getConsumption();
+            Double emissionFactor = cons.getEmissionFactor();
 
-            Double emissionFactor = source.getEmissionFactor();
-
-            Validate.notNull(id, "Energy Source Id must not be empty!");
-            Validate.notNull(description, "Energy Source Description must not be empty!");
-            Validate.isTrue(consumption > 0, "Energy Consumption must be a positive value!");
-
-            // If emission factor is not provided, use a default value
-            if (emissionFactor == null) {
-                Optional<EnergySource> matchingSource = externalSources.stream()
-                        .filter(src -> id.equals(src.getEnergySourceId()))
-                        .findFirst();
-                if (matchingSource.isPresent()) {
-                    emissionFactor = matchingSource.get().getEmissionFactor();
-                } else {
-                    // return ResponseEntity.badRequest();
-                    // Todo
-                    emissionFactor = 1.0;
-                }
+            if (id == null || description == null || consumption == null) {
+                return ResponseEntity.badRequest().body(
+                        "Invalid input: Energy Source Id, Description, and Consumption must not be empty!");
             }
 
-            // Calculate total energy consumption and CO2 emissions
-            double totalEnergy = consumption * emissionFactor;
+            EnergySource matchingSource = externalSources.stream()
+                    .filter(src -> id.equals(src.getEnergySourceId()))
+                    .findFirst().orElse(null);
 
-            // Create ConsumptionCalculation object
-            ConsumptionCalculation calculation = new ConsumptionCalculation();
-            calculation.setLabel(description);
-            calculation.setEnergy(totalEnergy);
-            calculation.setCo2(consumption);
+            if (matchingSource == null)
+                return ResponseEntity.badRequest()
+                        .body(String.format("Could not find a matching energy source for id %s.", id));
 
-            // Add the calculation to the list
-            consumptionList.add(calculation);
+            if (emissionFactor == null)
+                emissionFactor = matchingSource.getEmissionFactor();
+
+            double energy = consumption * matchingSource.getConversionFactor();
+            double co2 = energy * emissionFactor;
+
+            ConsumptionCalculation calc = new ConsumptionCalculation();
+            calc.setLabel(String.format("%s (%s)", matchingSource.getName(), description));
+            calc.setEnergy(energy);
+            calc.setCo2(co2);
+            calculations.add(calc);
         }
-
-        return ResponseEntity.ok(consumptionList);
+        return ResponseEntity.ok(calculations);
     }
 
     @GetMapping("/all")
