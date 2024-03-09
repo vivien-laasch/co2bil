@@ -1,24 +1,10 @@
 package de.vlaasch.co2bil.entities;
 
+import lombok.Data;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-@Entity
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
+@Data
 public class EnergySource {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long energySourceId;
+    private String energySourceId;
     private String scopeId;
     private String name;
     private float conversionFactor;
