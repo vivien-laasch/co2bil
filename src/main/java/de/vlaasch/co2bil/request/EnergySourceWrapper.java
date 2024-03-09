@@ -1,8 +1,8 @@
-package de.vlaasch.co2bil.controllers;
+package de.vlaasch.co2bil.request;
 
 import java.util.List;
 
-import de.vlaasch.co2bil.data.EnergyConsumptionRequest;
+import de.vlaasch.co2bil.data.ConsumptionForm;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,6 +11,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class EnergySourceWrapper {
-    private List<EnergyConsumptionRequest> energySources;
+    private List<ConsumptionForm> energySources;
 
 }

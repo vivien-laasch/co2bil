@@ -2,7 +2,7 @@ package de.vlaasch.co2bil.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collector;
+import java.util.Optional;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.vlaasch.co2bil.data.EnergyConsumptionRequest;
-import de.vlaasch.co2bil.data.EnergyConsumptionResponse;
+import de.vlaasch.co2bil.data.ConsumptionCalculation;
+import de.vlaasch.co2bil.data.ConsumptionForm;
 import de.vlaasch.co2bil.data.EnergySource;
+import de.vlaasch.co2bil.request.EnergySourceWrapper;
 import de.vlaasch.co2bil.services.energysource.EnergySourceApiService;
 
 @RestController
@@ -26,32 +27,51 @@ public class EnergySourceController {
     EnergySourceApiService energySourceApiService;
 
     @PostMapping(value = "/consumption")
-    public ResponseEntity<List<EnergyConsumptionResponse>> getConsumption(
+    public ResponseEntity<List<ConsumptionCalculation>> getConsumption(
             @RequestBody EnergySourceWrapper sources) {
 
-        // Assume the API only has a single "getAll" endpoint, so we get all sources here.
-        List<EnergySource> sourcesExternal = energySourceApiService.getEnergySources();
-        List<EnergyConsumptionResponse> consumptionList = new ArrayList<>();
-        for (EnergyConsumptionRequest cons : sources.getEnergySources()) {
-            String id = cons.getId();
-            String description = cons.getDescription();
-            double consumption = cons.getConsumption();
+        // Fetch external energy sources from the API, assume there is only "getAll"
+        // method for now
+        List<EnergySource> externalSources = energySourceApiService.getEnergySources();
 
-            Double emissionFactor = cons.getEmissionFactor();
-            Validate.notNull(id, "Energy Source Id, descrption and consumption must not be emtpy!", description,
-                    consumption);
+        List<ConsumptionCalculation> consumptionList = new ArrayList<>();
+
+        for (ConsumptionForm source : sources.getEnergySources()) {
+            String id = source.getId();
+            String description = source.getDescription();
+            double consumption = source.getConsumption();
+
+            Double emissionFactor = source.getEmissionFactor();
+
+            Validate.notNull(id, "Energy Source Id must not be empty!");
+            Validate.notNull(description, "Energy Source Description must not be empty!");
+            Validate.isTrue(consumption > 0, "Energy Consumption must be a positive value!");
+
+            // If emission factor is not provided, use a default value
             if (emissionFactor == null) {
-                // find matching id in external sources
-                // sourcesExternal.stream().filter(src ->
-                // src.getEnergySourceId.equals(id)).collect()
-                emissionFactor = 1.0;
+                Optional<EnergySource> matchingSource = externalSources.stream()
+                        .filter(src -> id.equals(src.getEnergySourceId()))
+                        .findFirst();
+                if (matchingSource.isPresent()) {
+                    emissionFactor = matchingSource.get().getEmissionFactor();
+                } else {
+                    // return ResponseEntity.badRequest();
+                    // Todo
+                    emissionFactor = 1.0;
+                }
             }
-            double totalCons = consumption * emissionFactor;
-            EnergyConsumptionResponse test = new EnergyConsumptionResponse();
-            test.setLabel(description);
-            test.setEnergy(totalCons);
-            test.setCo2(consumption);
-            consumptionList.add(test);
+
+            // Calculate total energy consumption and CO2 emissions
+            double totalEnergy = consumption * emissionFactor;
+
+            // Create ConsumptionCalculation object
+            ConsumptionCalculation calculation = new ConsumptionCalculation();
+            calculation.setLabel(description);
+            calculation.setEnergy(totalEnergy);
+            calculation.setCo2(consumption);
+
+            // Add the calculation to the list
+            consumptionList.add(calculation);
         }
 
         return ResponseEntity.ok(consumptionList);
