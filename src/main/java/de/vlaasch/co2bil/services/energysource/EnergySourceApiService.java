@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import de.vlaasch.co2bil.entities.EnergySource;
+import de.vlaasch.co2bil.data.EnergySource;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
