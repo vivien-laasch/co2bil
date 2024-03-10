@@ -34,7 +34,7 @@
       },
       "Logger": {
         "name": "de.vlaasch",
-        "level": "debug"
+        "level": "trace"
       }
     }
   }
