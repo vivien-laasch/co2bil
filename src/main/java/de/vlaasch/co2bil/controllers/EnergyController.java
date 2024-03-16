@@ -2,7 +2,6 @@ package de.vlaasch.co2bil.controllers;
 
 import java.util.List;
 
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,23 +14,20 @@ import de.vlaasch.co2bil.data.Co2Balance;
 import de.vlaasch.co2bil.data.EnergySource;
 import de.vlaasch.co2bil.data.EnergyUsageEntry;
 import de.vlaasch.co2bil.exceptions.EnergySourceNotFoundException;
-import de.vlaasch.co2bil.exceptions.InvalidEnergyUsageException;
 import de.vlaasch.co2bil.exceptions.ExternalEnergySourcesNotFoundException;
+import de.vlaasch.co2bil.exceptions.InvalidEnergyUsageException;
 import de.vlaasch.co2bil.requests.EnergyUsageWrapper;
 import de.vlaasch.co2bil.services.emission.Co2BalanceService;
 import de.vlaasch.co2bil.services.externalapi.ExternalApiService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/energy")
+@RequiredArgsConstructor
 public class EnergyController {
 
     private final Co2BalanceService co2BalanceService;
     private final ExternalApiService externalApiService;
-
-    public EnergyController(Co2BalanceService co2BalanceService, ExternalApiService externalApiService) {
-        this.co2BalanceService = co2BalanceService;
-        this.externalApiService = externalApiService;
-    }
 
     @ExceptionHandler({ InvalidEnergyUsageException.class, EnergySourceNotFoundException.class })
     public ResponseEntity<String> handleBadRequest(Exception e) {
@@ -39,8 +35,13 @@ public class EnergyController {
     }
 
     @ExceptionHandler(ExternalEnergySourcesNotFoundException.class)
-    public ResponseEntity<String> handleInternalError(Exception e) {
+    public ResponseEntity<String> handleNoEnergySources(Exception e) {
         return ResponseEntity.internalServerError().body(e.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleUnexpectedError(Exception e) {
+        return ResponseEntity.internalServerError().body("An unexpected error occurred, please try again later.");
     }
 
     @PostMapping(value = "/balance")
@@ -59,7 +60,6 @@ public class EnergyController {
     }
 
     @GetMapping(value = "/sources")
-    @Profile("dev")
     public ResponseEntity<List<EnergySource>> getEnergySourcesExternal()
             throws InvalidEnergyUsageException, EnergySourceNotFoundException, ExternalEnergySourcesNotFoundException {
         List<EnergySource> energySources = externalApiService.getEnergySources();
