@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import de.vlaasch.co2bil.data.EnergySource;
-import de.vlaasch.co2bil.exceptions.NoEnergySourcesFoundException;
+import de.vlaasch.co2bil.exceptions.ExternalEnergySourcesNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -22,7 +22,7 @@ public class ExternalApiService {
     }
 
     @SuppressWarnings("null")
-    public List<EnergySource> getEnergySources() throws NoEnergySourcesFoundException {
+    public List<EnergySource> getEnergySources() throws ExternalEnergySourcesNotFoundException {
         String energySourcesApiUrl = externalApiProperties.getEnergySourcesApiUrl();
         Validate.notBlank(energySourcesApiUrl, "Energy sources API URL (external.api.energySourcesApiUrl) must not be blank!");
 
