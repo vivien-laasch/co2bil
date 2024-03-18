@@ -53,10 +53,10 @@ public class EnergyController {
         List<EnergySource> energySources = externalApiService.getEnergySources();
         List<EnergyUsageEntry> entries = wrapper.getEntries();
 
-        if (energySources == null)
+        if (energySources == null || energySources.isEmpty())
             throw new ExternalEnergySourcesNotFoundException("Could not find any energy sources.");
 
-        if (entries == null)
+        if (entries == null || entries.isEmpty())
             throw new InvalidEnergyUsageException("Energy usages entries must not be empty.");
 
         return ResponseEntity.ok(co2BalanceService.getCo2Balance(entries, energySources));

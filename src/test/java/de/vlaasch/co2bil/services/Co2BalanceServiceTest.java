@@ -102,4 +102,18 @@ public class Co2BalanceServiceTest {
         assertThrows(EnergySourceNotFoundException.class,
                 () -> co2BalanceService.getCo2Balance(usages, energySources));
     }
+
+    @Test
+    public void testGetCo2Balance_TooManyDecimals() throws Exception {
+        // Given
+        EnergyUsageEntry usage = new EnergyUsageEntry();
+        usage.setId("1");
+        usage.setDescription("Description");
+        usage.setConsumption(10.055555);
+        usages.add(usage);
+
+        // When
+        assertThrows(InvalidEnergyUsageException.class,
+                () -> co2BalanceService.getCo2Balance(usages, energySources));
+    }
 }
