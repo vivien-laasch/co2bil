@@ -1,5 +1,6 @@
 package de.vlaasch.co2bil.services.emission;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +39,11 @@ public class Co2BalanceService {
                         "Invalid input: Energy Source Id, Description, and Consumption must not be empty!");
             }
 
+            if (!isValidDecimalPlaces(consumption) || !isValidDecimalPlaces(emissionFactor) ) {
+                throw new InvalidEnergyUsageException(
+                        "Invalid input: Emission Factor and Consumption must not be have more than 5 decimal places!");
+            }
+
             EnergySource matchingSource = energySources.stream()
                     .filter(src -> id.equals(src.getEnergySourceId()))
                     .findFirst().orElse(null);
@@ -65,5 +71,13 @@ public class Co2BalanceService {
         }
 
         return calculations;
+    }
+
+    private boolean isValidDecimalPlaces(Double value) {
+        if (value == null)
+            return true;
+
+        BigDecimal bd = BigDecimal.valueOf(value);
+        return bd.scale() <= 5;
     }
 }
