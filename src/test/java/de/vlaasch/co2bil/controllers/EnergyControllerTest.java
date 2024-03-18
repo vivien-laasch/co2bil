@@ -25,6 +25,7 @@ import de.vlaasch.co2bil.requests.EnergyUsageWrapper;
 import de.vlaasch.co2bil.services.emission.Co2BalanceService;
 import de.vlaasch.co2bil.services.externalapi.ExternalApiService;
 
+@SuppressWarnings("unchecked")
 public class EnergyControllerTest {
     ExternalApiService externalApiService = mock(ExternalApiService.class);
     Co2BalanceService co2BalanceService = mock(Co2BalanceService.class);
