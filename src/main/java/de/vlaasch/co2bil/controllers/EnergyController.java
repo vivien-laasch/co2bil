@@ -14,42 +14,44 @@ import de.vlaasch.co2bil.data.Co2Balance;
 import de.vlaasch.co2bil.data.EnergySource;
 import de.vlaasch.co2bil.data.EnergyUsageEntry;
 import de.vlaasch.co2bil.exceptions.EnergySourceNotFoundException;
+import de.vlaasch.co2bil.exceptions.ExternalEnergySourcesNotFoundException;
 import de.vlaasch.co2bil.exceptions.InvalidEnergyUsageException;
-import de.vlaasch.co2bil.exceptions.NoEnergySourcesFoundException;
 import de.vlaasch.co2bil.requests.EnergyUsageWrapper;
 import de.vlaasch.co2bil.services.emission.Co2BalanceService;
 import de.vlaasch.co2bil.services.externalapi.ExternalApiService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/energy")
+@RequiredArgsConstructor
 public class EnergyController {
 
     private final Co2BalanceService co2BalanceService;
     private final ExternalApiService externalApiService;
-
-    public EnergyController(Co2BalanceService co2BalanceService, ExternalApiService externalApiService) {
-        this.co2BalanceService = co2BalanceService;
-        this.externalApiService = externalApiService;
-    }
 
     @ExceptionHandler({ InvalidEnergyUsageException.class, EnergySourceNotFoundException.class })
     public ResponseEntity<String> handleBadRequest(Exception e) {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 
-    @ExceptionHandler(NoEnergySourcesFoundException.class)
-    public ResponseEntity<String> handleInternalError(Exception e) {
+    @ExceptionHandler(ExternalEnergySourcesNotFoundException.class)
+    public ResponseEntity<String> handleNoEnergySources(Exception e) {
         return ResponseEntity.internalServerError().body(e.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleUnexpectedError(Exception e) {
+        return ResponseEntity.internalServerError().body("An unexpected error occurred, please try again later.");
     }
 
     @PostMapping(value = "/balance")
     public ResponseEntity<List<Co2Balance>> getCo2Balance(@RequestBody EnergyUsageWrapper wrapper)
-            throws InvalidEnergyUsageException, EnergySourceNotFoundException, NoEnergySourcesFoundException {
+            throws InvalidEnergyUsageException, EnergySourceNotFoundException, ExternalEnergySourcesNotFoundException {
         List<EnergySource> energySources = externalApiService.getEnergySources();
         List<EnergyUsageEntry> entries = wrapper.getEntries();
 
         if (energySources == null)
-            throw new NoEnergySourcesFoundException("Could not find any energy sources.");
+            throw new ExternalEnergySourcesNotFoundException("Could not find any energy sources.");
 
         if (entries == null)
             throw new InvalidEnergyUsageException("Energy usages entries must not be empty.");
@@ -59,11 +61,11 @@ public class EnergyController {
 
     @GetMapping(value = "/sources")
     public ResponseEntity<List<EnergySource>> getEnergySourcesExternal()
-            throws InvalidEnergyUsageException, EnergySourceNotFoundException, NoEnergySourcesFoundException {
+            throws InvalidEnergyUsageException, EnergySourceNotFoundException, ExternalEnergySourcesNotFoundException {
         List<EnergySource> energySources = externalApiService.getEnergySources();
 
         if (energySources == null)
-            throw new NoEnergySourcesFoundException("Could not find any energy sources.");
+            throw new ExternalEnergySourcesNotFoundException("Could not find any energy sources.");
             
         return ResponseEntity.ok(energySources);
     }

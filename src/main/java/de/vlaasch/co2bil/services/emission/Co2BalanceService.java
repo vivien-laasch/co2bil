@@ -3,7 +3,6 @@ package de.vlaasch.co2bil.services.emission;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import de.vlaasch.co2bil.data.Co2Balance;
@@ -11,6 +10,7 @@ import de.vlaasch.co2bil.data.EnergySource;
 import de.vlaasch.co2bil.data.EnergyUsageEntry;
 import de.vlaasch.co2bil.exceptions.EnergySourceNotFoundException;
 import de.vlaasch.co2bil.exceptions.InvalidEnergyUsageException;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Service

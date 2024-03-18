@@ -4,11 +4,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.Validate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import de.vlaasch.co2bil.data.EnergySource;
-import de.vlaasch.co2bil.exceptions.NoEnergySourcesFoundException;
+import de.vlaasch.co2bil.exceptions.ExternalEnergySourcesNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -16,20 +17,21 @@ import lombok.extern.slf4j.Slf4j;
 public class ExternalApiService {
 
     private final ExternalApiProperties externalApiProperties;
-
+        
     public ExternalApiService(ExternalApiProperties externalApiProperties) {
         this.externalApiProperties = externalApiProperties;
     }
 
     @SuppressWarnings("null")
-    public List<EnergySource> getEnergySources() throws NoEnergySourcesFoundException {
+    public List<EnergySource> getEnergySources() throws ExternalEnergySourcesNotFoundException {
         String energySourcesApiUrl = externalApiProperties.getEnergySourcesApiUrl();
-        Validate.notBlank(energySourcesApiUrl, "Energy sources API URL (external.api.energySourcesApiUrl) must not be blank!");
+        Validate.notBlank(energySourcesApiUrl,
+                "Energy sources API URL (external.api.energySourcesApiUrl) must not be blank!");
 
         log.debug("Getting energy sources from external API: {} ", energySourcesApiUrl);
-
-        RestTemplate template = new RestTemplate();
-        EnergySource[] sources = template.getForObject(energySourcesApiUrl, EnergySource[].class);
-        return Arrays.asList(sources);
+        
+        RestClient client = RestClient.create(energySourcesApiUrl);
+        ResponseEntity<EnergySource[]> sources = client.get().retrieve().toEntity(EnergySource[].class);
+        return Arrays.asList(sources.getBody());
     }
 }
