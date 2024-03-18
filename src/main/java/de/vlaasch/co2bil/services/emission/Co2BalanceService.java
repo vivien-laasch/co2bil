@@ -1,6 +1,7 @@
 package de.vlaasch.co2bil.services.emission;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,6 +64,10 @@ public class Co2BalanceService {
 
             BigDecimal energy = consumption.multiply(conversionFactor);
             BigDecimal co2 = energy.multiply(emissionFactor).divide(BigDecimal.valueOf(1000));
+            
+            //Assume desired output precision of 2 decimal places
+            energy = energy.setScale(2, RoundingMode.HALF_UP);
+            co2 = co2.setScale(2, RoundingMode.HALF_UP);
 
             Co2Balance calc = new Co2Balance();
             calc.setLabel(String.format("%s (%s)", matchingSource.getName(), description));
