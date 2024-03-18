@@ -31,23 +31,24 @@ public class EnergyControllerTest {
     Co2BalanceService co2BalanceService = mock(Co2BalanceService.class);
     EnergyController energyController = new EnergyController(co2BalanceService, externalApiService);
     EnergyUsageWrapper wrapper = mock(EnergyUsageWrapper.class);
-    List<Co2Balance> expectedCo2Balances = List.of(new Co2Balance("Electricity (Description)", 40.0, 80.0));
 
     @BeforeEach
     void setUp() throws Exception {
         when(externalApiService.getEnergySources()).thenReturn(mock(List.class));
-
     }
 
     @Test
     void testGetCo2Balance() throws Exception {
-        when(co2BalanceService.getCo2Balance(any(), any())).thenReturn(mock(List.class));
+        // Given
         EnergyUsageEntry entry = new EnergyUsageEntry();
+
+        // When
+        when(co2BalanceService.getCo2Balance(any(), any())).thenReturn(mock(List.class));
         when(wrapper.getEntries()).thenReturn(List.of(entry));
 
         ResponseEntity<List<Co2Balance>> responseEntity = energyController.getCo2Balance(wrapper);
 
-        // Assert the response
+        // Then
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertNotNull(responseEntity.getBody());
         verify(externalApiService, times(1)).getEnergySources();
@@ -56,7 +57,10 @@ public class EnergyControllerTest {
 
     @Test
     void testGetEnergySourcesExternal() throws Exception {
+        // When
         ResponseEntity<List<EnergySource>> responseEntity = energyController.getEnergySourcesExternal();
+
+        // Then
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertNotNull(responseEntity.getBody());
         verify(externalApiService, times(1)).getEnergySources();
@@ -64,15 +68,20 @@ public class EnergyControllerTest {
 
     @Test
     void testHandleBadRequest() throws Exception {
+        // When
         when(wrapper.getEntries()).thenReturn(null);
+
+        // Then
         assertThrows(InvalidEnergyUsageException.class, () -> energyController.getCo2Balance(wrapper));
     }
 
     @Test
     void testHandleNoEnergySources() throws Exception {
+        // When
         when(co2BalanceService.getCo2Balance(any(), any())).thenReturn(mock(List.class));
         when(externalApiService.getEnergySources()).thenReturn(null);
+        // Then
         assertThrows(ExternalEnergySourcesNotFoundException.class, () -> energyController.getCo2Balance(wrapper));
     }
-
+    
 }
