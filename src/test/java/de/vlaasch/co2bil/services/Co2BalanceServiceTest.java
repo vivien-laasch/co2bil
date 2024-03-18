@@ -52,7 +52,7 @@ public class Co2BalanceServiceTest {
         Co2Balance balance = result.get(0);
         assertEquals("Electricity (Description)", balance.getLabel());
         assertEquals(20.0, balance.getEnergy());
-        assertEquals(40.0, balance.getCo2());
+        assertEquals(0.04, balance.getCo2());
     }
 
     @Test
@@ -73,7 +73,7 @@ public class Co2BalanceServiceTest {
         Co2Balance balance = result.get(0);
         assertEquals("Electricity (Description)", balance.getLabel());
         assertEquals(20.0, balance.getEnergy());
-        assertEquals(60.0, balance.getCo2());
+        assertEquals(0.06, balance.getCo2());
     }
 
     @Test

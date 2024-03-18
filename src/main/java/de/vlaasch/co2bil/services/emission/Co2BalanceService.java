@@ -28,8 +28,10 @@ public class Co2BalanceService {
         for (EnergyUsageEntry usage : usages) {
             String id = usage.getId();
             String description = usage.getDescription();
-            Double consumption = usage.getConsumption();
-            Double emissionFactor = usage.getEmissionFactor();
+            BigDecimal consumption = usage.getConsumption() != null ? BigDecimal.valueOf(usage.getConsumption()) : null;
+            BigDecimal emissionFactor = usage.getEmissionFactor() != null
+                    ? BigDecimal.valueOf(usage.getEmissionFactor())
+                    : null;
 
             log.trace("Processing energy usage entry: id={}, description={}, consumption={}, emissionFactor={}", id,
                     description, consumption, emissionFactor);
@@ -39,7 +41,7 @@ public class Co2BalanceService {
                         "Invalid input: Energy Source Id, Description, and Consumption must not be empty!");
             }
 
-            if (!isValidDecimalPlaces(consumption) || !isValidDecimalPlaces(emissionFactor) ) {
+            if (!isValidDecimalPlaces(consumption) || !isValidDecimalPlaces(emissionFactor)) {
                 throw new InvalidEnergyUsageException(
                         "Invalid input: Emission Factor and Consumption must not be have more than 5 decimal places!");
             }
@@ -53,17 +55,19 @@ public class Co2BalanceService {
                         String.format("Could not find a matching energy source for id %s.", id));
 
             if (emissionFactor == null) {
-                emissionFactor = matchingSource.getEmissionFactor();
+                emissionFactor = BigDecimal.valueOf(matchingSource.getEmissionFactor());
                 log.trace("Using default emission factor {} for energy source {}.", emissionFactor, id);
             }
 
-            double energy = consumption * matchingSource.getConversionFactor();
-            double co2 = energy * emissionFactor;
+            BigDecimal conversionFactor = BigDecimal.valueOf(matchingSource.getConversionFactor());
+
+            BigDecimal energy = consumption.multiply(conversionFactor);
+            BigDecimal co2 = energy.multiply(emissionFactor).divide(BigDecimal.valueOf(1000));
 
             Co2Balance calc = new Co2Balance();
             calc.setLabel(String.format("%s (%s)", matchingSource.getName(), description));
-            calc.setEnergy(energy);
-            calc.setCo2(co2);
+            calc.setEnergy(energy.doubleValue());
+            calc.setCo2(co2.doubleValue());
             calculations.add(calc);
 
             log.trace("Calculation completed for energy usage entry: label={}, energy={}, co2={}", calc.getLabel(),
@@ -73,11 +77,10 @@ public class Co2BalanceService {
         return calculations;
     }
 
-    private boolean isValidDecimalPlaces(Double value) {
+    private boolean isValidDecimalPlaces(BigDecimal value) {
         if (value == null)
             return true;
 
-        BigDecimal bd = BigDecimal.valueOf(value);
-        return bd.scale() <= 5;
+        return value.scale() <= 5;
     }
 }
