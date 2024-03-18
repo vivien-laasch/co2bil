@@ -16,11 +16,11 @@ This repository contains a Java/Spring Boot application for calculating energy b
 
 For the `/api/v1/energy/balance` endpoint, the client should send a POST request with a JSON body containing a list of energy entries. Each entry should include the following fields:
 
-| Field                     | Data Type | Validation                                          |
-|---------------------------|-----------|-----------------------------------------------------|
+| Field                     | Data Type | Validation                                         |
+|---------------------------|-----------|----------------------------------------------------|
 | Description               | Text      | - Required                                         |
 | Energy Source ID          | Text      | - Required                                         |
-| Consumption               | Decimal   | - Up to 5 decimal places<br>- Required            |
+| Consumption               | Decimal   | - Up to 5 decimal places<br>- Required             |
 | Individual Emission Factor| Decimal   | - Up to 5 decimal places (optional)                |
 
 Example request body:
@@ -28,15 +28,30 @@ Example request body:
 {
   "entries": [
     {
-      "id": "2005",
-      "description": "Standort Berlin ⚡",
-      "consumption": 50.4
+      "id": "2001",
+      "description": "Standort Berlin",
+      "consumption": 2050.81863
     },
     {
-      "id": "4021",
+      "id": "2001",
+      "description": "Standort München",
+      "consumption": 1078.3699
+    },
+    {
+      "id": "2006",
+      "description": "B APL 001",
+      "consumption": 10050
+    },
+    {
+      "id": "1000",
       "description": "Standort Ketsch",
-      "consumption": 55.4,
-      "emissionFactor": 2.5
+      "consumption": 3770
+    },
+    {
+      "id": "1004",
+      "description": "Standort Sandhausen",
+      "consumption": 3000,
+      "emissionFactor": 0.04
     }
   ]
 }
@@ -52,14 +67,29 @@ Example response format:
 ```json
 [
   {
-    "label": "LPG (Standort Berlin ⚡)",
-    "energy": 643.356,
-    "co2": 147.96544644
+    "label": "Heizöl leicht (Standort Berlin)",
+    "energy": 22671.8,
+    "co2": 6.44
   },
   {
-    "label": "Mietwagen (Gas) (Standort Ketsch)",
-    "energy": 707.181,
-    "co2": 1767.9525
+    "label": "Heizöl leicht (Standort München)",
+    "energy": 11921.38,
+    "co2": 3.39
+  },
+  {
+    "label": "Benzin (B APL 001)",
+    "energy": 90098.25,
+    "co2": 20.94
+  },
+  {
+    "label": "Strommix (Deutschland) (Standort Ketsch)",
+    "energy": 3770.0,
+    "co2": 1.67
+  },
+  {
+    "label": "Andere Elektrizität (erneuerbar, eingekauft) (Standort Sandhausen)",
+    "energy": 3000.0,
+    "co2": 0.12
   }
 ]
 ```

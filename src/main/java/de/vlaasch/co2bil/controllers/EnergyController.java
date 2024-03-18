@@ -20,10 +20,12 @@ import de.vlaasch.co2bil.requests.EnergyUsageWrapper;
 import de.vlaasch.co2bil.services.emission.Co2BalanceService;
 import de.vlaasch.co2bil.services.externalapi.ExternalApiService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/v1/energy")
 @RequiredArgsConstructor
+@Slf4j
 public class EnergyController {
 
     private final Co2BalanceService co2BalanceService;
@@ -41,6 +43,7 @@ public class EnergyController {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleUnexpectedError(Exception e) {
+        log.error("An unhandled error occurred.", e);
         return ResponseEntity.internalServerError().body("An unexpected error occurred, please try again later.");
     }
 
@@ -66,7 +69,7 @@ public class EnergyController {
 
         if (energySources == null)
             throw new ExternalEnergySourcesNotFoundException("Could not find any energy sources.");
-            
+
         return ResponseEntity.ok(energySources);
     }
 }
