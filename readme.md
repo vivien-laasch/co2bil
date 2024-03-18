@@ -1,5 +1,3 @@
-Thank you for the additional details. I've updated the README.md accordingly:
-
 # Energy Balance Calculator API
 
 This repository contains a Java/Spring Boot application for calculating energy balance and retrieving energy source master data. It provides the following endpoints:
